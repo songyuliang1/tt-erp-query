@@ -1,5 +1,0 @@
-chore: 补 LICENSE（MIT），README 收敛为落地页
-
-- 按技能目录规范补齐 LICENSE；目录名与 SKILL.md 的 name 均为 tt-erp-query
-- README 不再重复命令与参数（那是 SKILL.md 的职责），只保留定位、安装、依赖、结构、许可，
-  避免两处维护走样
