@@ -1,0 +1,6 @@
+feat: 同时支持 PowerShell 5.1 与 7，tt/config 定位改为逐级向上查找
+
+- 脚本只用了 5.1/7 共有的语法，实测两个版本输出一致（PS 5.1.26100 / PS 7.6.9）
+- 定位 tt.exe 与 config.json 时从脚本目录逐级向上找，不再假设固定的仓库层级；
+  找不到再退回 TT_EXE / TT_CONFIG 与 PATH，克隆到任意位置都能用
+- 文档写明两个版本的调用方式（powershell / pwsh），并保留 UTF-8 BOM 以兼容 5.1

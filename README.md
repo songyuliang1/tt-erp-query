@@ -28,12 +28,13 @@ git clone https://github.com/songyuliang1/tt-erp-query.git D:\技能库\tt-erp-q
 - `tt` 命令（需要 `tt dict r.t --full` 与 `tt db sql`）。
   `db sql --batch`（一次建连跑多条）是 0.5.3 之后才加的；旧版 tt 会自动退回逐条执行，
   结果相同，只是每条多付一次登录（约 1.4 s/条，而不是 0.3 s/条）。
-- Windows PowerShell 5.1
+- Windows PowerShell 5.1 或 7（`pwsh`）；脚本保留 UTF-8 BOM 以兼容 5.1
 - 用户自己的 `tt` 配置：`config.json`（脚本按「仓库根 → `TT_CONFIG` → `%APPDATA%\tt\config.json`」找）
 
 ## 四个命令
 
 ```powershell
+# PowerShell 7 用户把 powershell 换成 pwsh，参数一致
 powershell -NoProfile -File .\scripts\ttq.ps1 env                                  # 环境与企业（纯本地）
 powershell -NoProfile -File .\scripts\ttq.ps1 schema "pmdl_t,pmdn_t"                # 表结构一次取全并缓存
 powershell -NoProfile -File .\scripts\ttq.ps1 schema pmdn_t -Match "数量|单价"       # 只筛相关字段（零网络）
@@ -46,7 +47,7 @@ powershell -NoProfile -File .\scripts\ttq.ps1 sql "正式@<企业>" -File q.json
 
 ## 自检
 
-脚本是 PowerShell 5.1 + UTF-8 BOM：没有 BOM 会被按 ANSI 解码，中文变乱码、直接语法错。
+脚本保留 UTF-8 BOM：PowerShell 5.1 没有 BOM 会按 ANSI 解码，中文变乱码、直接语法错；PowerShell 7 两种都能读，保留 BOM 让两边共用一份文件。
 改完脚本跑一次：
 
 ```powershell

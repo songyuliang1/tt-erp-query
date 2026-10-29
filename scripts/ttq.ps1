@@ -94,7 +94,6 @@ $ProgressPreference = 'SilentlyContinue'
 
 $ScriptDir = $PSScriptRoot
 $SkillDir = Split-Path -Parent $ScriptDir
-$RepoDir = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $SkillDir))
 $CacheDir = Join-Path $SkillDir '.cache'
 $OutDir = Join-Path $SkillDir 'out'
 $swTotal = [System.Diagnostics.Stopwatch]::StartNew()
@@ -159,18 +158,35 @@ function Show-Rows {
 }
 
 # ---- tt / config ------------------------------------------------------------
-if ($env:TT_EXE -and (Test-Path $env:TT_EXE)) { $TtExe = $env:TT_EXE }
-elseif (Test-Path (Join-Path $RepoDir 'tt.exe')) { $TtExe = Join-Path $RepoDir 'tt.exe' }
-else {
-  $cmd = Get-Command tt -ErrorAction SilentlyContinue
-  if (-not $cmd) { Die '找不到 tt：设置 TT_EXE，或把 tt.exe 放到仓库根 / PATH' }
-  $TtExe = $cmd.Source
+# 位置不写死：从脚本目录逐级往上找 tt.exe / config.json，克隆到任意位置都能定位；
+# 找不到再退回 TT_EXE / TT_CONFIG 环境变量与 PATH。PowerShell 5.1 与 7 行为一致。
+function Find-Upward {
+  param([string]$Start, [string]$Name, [int]$MaxDepth = 8)
+  $d = $Start
+  for ($i = 0; $i -lt $MaxDepth -and $d; $i++) {
+    $cand = Join-Path $d $Name
+    if (Test-Path $cand) { return $cand }
+    $parent = Split-Path -Parent $d
+    if (-not $parent -or $parent -eq $d) { break }
+    $d = $parent
+  }
+  return $null
 }
 
+$TtExe = $null
+if ($env:TT_EXE -and (Test-Path $env:TT_EXE)) { $TtExe = $env:TT_EXE }
+if (-not $TtExe) { $TtExe = Find-Upward -Start $ScriptDir -Name 'tt.exe' }
+if (-not $TtExe) {
+  $cmd = Get-Command tt -ErrorAction SilentlyContinue
+  if ($cmd) { $TtExe = $cmd.Source }
+}
+if (-not $TtExe) { Die '找不到 tt：设置 TT_EXE、把 tt.exe 放到上层目录，或装进 PATH' }
+
+$CfgPath = $null
 if ($env:TT_CONFIG -and (Test-Path $env:TT_CONFIG)) { $CfgPath = $env:TT_CONFIG }
-elseif (Test-Path (Join-Path $RepoDir 'config.json')) { $CfgPath = Join-Path $RepoDir 'config.json' }
-elseif (Test-Path (Join-Path $env:APPDATA 'tt\config.json')) { $CfgPath = Join-Path $env:APPDATA 'tt\config.json' }
-else { Die '找不到 config.json：设置 TT_CONFIG 或放到仓库根' }
+if (-not $CfgPath) { $CfgPath = Find-Upward -Start $ScriptDir -Name 'config.json' }
+if (-not $CfgPath -and (Test-Path (Join-Path $env:APPDATA 'tt\config.json'))) { $CfgPath = Join-Path $env:APPDATA 'tt\config.json' }
+if (-not $CfgPath) { Die '找不到 config.json：设置 TT_CONFIG，或放到上层目录 / %APPDATA%\tt\' }
 
 $cfg = Get-Content -Path $CfgPath -Raw -Encoding UTF8 | ConvertFrom-Json
 if (-not $Env) { $Env = ($cfg.hosts.sshs | Select-Object -First 1).name; if ($Command -ne 'env') { Write-Host ("（未指定 -Env，用配置里第一个环境：{0}）" -f $Env) -ForegroundColor DarkGray } }

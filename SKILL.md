@@ -19,6 +19,8 @@ description: T100 通用取数技能：查任意表的结构与真实样例、�
 > 路径约定：仓库里脚本在 `skills/tt-erp-query/scripts/`；装到 agent 目录后是
 > `<技能目录>/scripts/`。下文一律写 `<技能目录>`。
 
+下文示例用 Windows PowerShell 5.1 的 `powershell`；PowerShell 7 用户把命令里的 `powershell` 换成 `pwsh` 即可（参数一致）。
+
 ## 四个命令
 
 ```powershell
@@ -74,7 +76,7 @@ powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 sql "正式@<企业>"
 powershell -NoProfile -ExecutionPolicy Bypass -File <技能目录>/scripts/selfcheck.ps1
 ```
 
-- `*.ps1` 缺 UTF-8 BOM 就补上（PowerShell 5.1 没有 BOM 会按 ANSI 解码，中文变乱码、直接语法错）
+- `*.ps1` 缺 UTF-8 BOM 就补上（PowerShell 5.1 没有 BOM 会按 ANSI 解码，中文变乱码、直接语法错；7 两种都行，保留 BOM 是为了 5.1 也能跑）
 - 用 `[Parser]::ParseFile` 解析每个脚本，报行号列号
 - 校验同级技能目录的 `SKILL.md`：`name` 等于目录名、字符集合规、`description` 非空且 ≤1024 字
 
@@ -106,7 +108,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File <技能目录>/scripts/selfc
 - **大表聚合照样慢**：本技能只省往返，不省扫描；先用索引列（ent/单号/料号/日期）落范围。
 - **只读**：写语句会被 `tt db sql` 的只读闸门拒绝。
 - **旧版 tt**：没有 `db sql --batch` 时自动退回逐条执行，结果相同、速度慢（约 1.4 s/条）。
-- **Windows only**：脚本是 PowerShell 5.1 + UTF-8 BOM。
+- **Windows + PowerShell**：PowerShell 5.1 与 7（`pwsh`）都能跑；脚本保留 UTF-8 BOM —— 5.1 必需，7 兼容。Linux/macOS 不支持。
 
 ## 缓存与产物
 
