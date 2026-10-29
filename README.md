@@ -7,9 +7,22 @@ T100 通用取数技能：查任意表的结构与真实样例、跑任意只读
 
 ## 安装
 
+目录名必须等于 `SKILL.md` 里的 `name`（`tt-erp-query`），否则技能不会被加载。
+
+**方式一：clone（推荐，目录天然同名）**
+
 ```powershell
 git clone https://github.com/songyuliang1/tt-erp-query.git D:\技能库\tt-erp-query
 ```
+
+**方式二：下 Releases 里的 `tt-erp-query.zip`**，解压即得 `tt-erp-query/` 目录。
+
+> ⚠️ 不要用 GitHub 的 **Code → Download ZIP**：那个包解压出来是 `tt-erp-query-main/`，
+> 名字和 `name` 对不上，装了也不会生效。已经下了的话，把目录改名成 `tt-erp-query` 即可：
+>
+> ```powershell
+> Rename-Item .\tt-erp-query-main tt-erp-query
+> ```
 
 在 `tt` 的 `config.json` 里登记本地路径：
 
