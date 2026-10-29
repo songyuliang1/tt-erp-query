@@ -1,4 +1,4 @@
-# tt-erp-query
+﻿# tt-erp-query
 
 T100 通用取数技能：查任意表的结构与真实样例、跑任意只读 SQL（多条一次建连）。
 表结构取一次就缓存、字段先看后写，不用猜列名、不靠报错试探。
@@ -35,12 +35,13 @@ git clone https://github.com/songyuliang1/tt-erp-query.git D:\技能库\tt-erp-q
 
 ```powershell
 # PowerShell 7 用户把 powershell 换成 pwsh，参数一致
+# 表名/列名都是占位符，换成你自己环境的实际名字；不知道表名就先 tt dict r.t --kw <业务词>
 powershell -NoProfile -File .\scripts\ttq.ps1 env                                  # 环境与企业（纯本地）
-powershell -NoProfile -File .\scripts\ttq.ps1 schema "pmdl_t,pmdn_t"                # 表结构一次取全并缓存
-powershell -NoProfile -File .\scripts\ttq.ps1 schema pmdn_t -Match "数量|单价"       # 只筛相关字段（零网络）
-powershell -NoProfile -File .\scripts\ttq.ps1 peek pmdn_t -Ent <企业> -Top 3        # 看几行真实数据
-powershell -NoProfile -File .\scripts\ttq.ps1 sql "正式@<企业>" -Sql "select ..."   # 单条
-powershell -NoProfile -File .\scripts\ttq.ps1 sql "正式@<企业>" -File q.json        # 多条，一次建连
+powershell -NoProfile -File .\scripts\ttq.ps1 schema "<表1>,<表2>"                # 表结构一次取全并缓存
+powershell -NoProfile -File .\scripts\ttq.ps1 schema "<表名>" -Match "<字段关键词>"       # 只筛相关字段（零网络）
+powershell -NoProfile -File .\scripts\ttq.ps1 peek "<表名>" -Ent <企业> -Top 3        # 看几行真实数据
+powershell -NoProfile -File .\scripts\ttq.ps1 sql "<环境>@<企业>" -Sql "select ..."   # 单条
+powershell -NoProfile -File .\scripts\ttq.ps1 sql "<环境>@<企业>" -File q.json        # 多条，一次建连
 ```
 
 `-Env` 省略时用 config 里第一个环境，并在输出里回显。

@@ -17,7 +17,7 @@
   env | schema | peek | sql
 
 .PARAMETER Target
-  schema: 表名，逗号分隔，如 "pmdl_t,pmdn_t"
+  schema: 表名，逗号分隔，如 "<表1>,<表2>"
   peek  : 单个表名
 
 .PARAMETER Env
@@ -30,7 +30,7 @@
   也可写成 <环境>@<企业>，如 "正式@1000"；给了它就覆盖 Env/Ent。
 
 .PARAMETER Where
-  peek 用的过滤条件（SQL 片段，不含 where 关键字），如 "pmdnent=1000"。
+  peek 用的过滤条件（SQL 片段，不含 where 关键字），如 "<企业列>=<值>"。
 
 .PARAMETER Columns
   peek 要显示的列，逗号分隔；省略则取表结构前 12 列。
@@ -61,13 +61,13 @@
   ttq.ps1 env
 
 .EXAMPLE
-  ttq.ps1 schema "pmdl_t,pmdn_t"
+  ttq.ps1 schema "<表1>,<表2>"
 
 .EXAMPLE
-  ttq.ps1 peek pmdn_t -Where "pmdnent=1000" -Top 3
+  ttq.ps1 peek "<表名>" -Where "<条件>" -Top 3
 
 .EXAMPLE
-  ttq.ps1 sql "正式@1000" -Sql "select count(*) c from pmdl_t"
+  ttq.ps1 sql "<环境>@<企业>" -Sql "select count(*) c from <表名>"
 #>
 [CmdletBinding()]
 param(
@@ -351,7 +351,7 @@ function Invoke-TtBatch {
 
 # ---- schema -----------------------------------------------------------------
 if ($Command -eq 'schema') {
-  if (-not $Target) { Die 'schema 需要表名，如 ttq.ps1 schema "pmdl_t,pmdn_t"' 2 }
+  if (-not $Target) { Die 'schema 需要表名，如 ttq.ps1 schema "<表1>,<表2>"' 2 }
   $tables = @($Target -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
   $swFetch = [System.Diagnostics.Stopwatch]::StartNew()
   $had = @{}
@@ -397,7 +397,7 @@ if ($Command -eq 'schema') {
 
 # ---- peek -------------------------------------------------------------------
 if ($Command -eq 'peek') {
-  if (-not $Target) { Die 'peek 需要表名，如 ttq.ps1 peek pmdn_t -Top 3' 2 }
+  if (-not $Target) { Die 'peek 需要表名，如 ttq.ps1 peek "<表名>" -Top 3' 2 }
   $table = $Target.Trim()
   $cache = Ensure-Tables -Tables @($table)
   $key = $table.ToLower()

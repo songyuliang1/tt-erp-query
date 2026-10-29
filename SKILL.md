@@ -6,7 +6,7 @@ description: T100 通用取数技能：查任意表的结构与真实样例、�
 # ERP 通用取数（任意表 / 任意只读 SQL）
 
 面向「要查的数据在哪张表、这张表字段是什么、这条 SQL 跑出来对不对」这类问题。
-不绑定任何业务口径 —— 库存、采购、应收、BOM 都一样处理。
+不绑定任何业务口径：任何模块的任何表，处理方式都一样。
 
 核心只有两句：
 
@@ -23,25 +23,28 @@ description: T100 通用取数技能：查任意表的结构与真实样例、�
 
 ## 四个命令
 
+下面的表名、列名都是占位符：`<表名>` / `<表1>,<表2>` / `<列1>,<列2>` / `<业务词>`，
+换成你自己环境里的实际名字即可。本技能不预设任何业务模块。
+
 ```powershell
 # 0) 环境与企业（纯本地，不联网）
 powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 env
 
-# 1) 找表：按业务词搜本地字典（47 ms 级）
-tt dict r.t --kw 采购单 --env local:正式 --format table
+# 1) 找表：不知道表名时，先按业务词搜本地字典（47 ms 级，不连库）
+tt dict r.t --kw <业务词> --env local:<环境> --format table
 
 # 2) 看结构：任意表一次取全字段 + 主键，进缓存
-powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 schema "pmdl_t,pmdn_t"
-powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 schema pmdn_t -Match "数量|单价"   # 零网络
-powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 schema pmdn_t -MaxFields 0          # 全列
+powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 schema "<表1>,<表2>"
+powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 schema "<表名>" -Match "<字段关键词>"   # 零网络
+powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 schema "<表名>" -MaxFields 0            # 全列
 
 # 3) 看样例：从真实数据认字段含义（比读字典快）
-powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 peek pmdn_t -Ent <企业> -Top 3 `
-  -Columns "pmdndocno,pmdn001,pmdn007"
+powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 peek "<表名>" -Ent <企业> -Top 3 `
+  -Columns "<列1>,<列2>,<列3>"
 
 # 4) 一次建连跑完（单条 / 多条）
-powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 sql "正式@<企业>" -Sql "select count(*) c from pmdl_t"
-powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 sql "正式@<企业>" -File q.json
+powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 sql "<环境>@<企业>" -Sql "select count(*) c from <表名>"
+powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 sql "<环境>@<企业>" -File q.json
 ```
 
 ## 顺序比技巧重要
@@ -50,9 +53,9 @@ powershell -NoProfile -File <技能目录>/scripts/ttq.ps1 sql "正式@<企业>"
 有没有我要的那条、在哪个企业」，比逐条试少两轮：
 
 ```json
-[{"id":"total","sql":"select count(*) c from pmdl_t"},
- {"id":"target","sql":"select count(*) c from pmdn_t where pmdn001='ABC12345'"},
- {"id":"ents","sql":"select pmdnent,count(*) c from pmdn_t where pmdn001='ABC12345' group by pmdnent"}]
+[{"id":"total", "sql":"select count(*) c from <表名>"},
+ {"id":"target","sql":"select count(*) c from <明细表> where <条件列>='<值>'"},
+ {"id":"ents",  "sql":"select <企业列>,count(*) c from <明细表> where <条件列>='<值>' group by <企业列>"}]
 ```
 
 三条一起跑 ≈ 0.36 s；逐条问要付三次登录，还要多两轮对话。
